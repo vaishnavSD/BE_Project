@@ -1,0 +1,15 @@
+export async function adduser(db, {name,email,mobile_No,address,role,password}) {
+    const [result] = await db.query(
+        "INSERT INTO users (name,email,mobile_No,address,role,password) VALUES (?, ?, ?, ?, ?, ?)",
+        [name,email,mobile_No,address,role,password]
+    );
+    return result.insertId;
+}
+
+export async function login(db, {mobile_No,password}) {
+    const [rows] = await db.query(
+        "SELECT * FROM users WHERE mobile_No = ? AND password = ?",
+        [mobile_No,password]
+    );
+    return rows[0];
+}

@@ -1,4 +1,4 @@
-import { addUserRequest,getAllUserRequests} from "../models/userRequest.model.js";  
+import { addUserRequest,getAllUserRequests} from "../models/scrapRequest.model.js";  
 // import scrapDetails from '../models/scrapDetails.model.js';
 
 export async function addRequest(req, res) {
