@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import mysql from "mysql2/promise";
 
 import scrapDetailsRouter from "./routes/scrapDetails.route.js";
-import userDetailsRouter from "./routes/userDetails.route.js";
+import userRequestRouter from "./routes/userRequest.route.js";
 
 // Load env variables
 dotenv.config({ path: "C:/Users/DELL/OneDrive/Desktop/BE Project/Project/env.env" });
@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 
 // ===== Routes =====
 app.use("/api/scrapDetails", scrapDetailsRouter);
-app.use("/api/userDetails", userDetailsRouter);
+app.use("/api/userRequests", userRequestRouter);
 
 // ===== Start Server =====
 app.listen(port, () => {

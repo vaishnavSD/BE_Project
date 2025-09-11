@@ -14,8 +14,7 @@ export const addDetails = async (req, res) => {
     const details = { category, type, price };
     const id = await addScrapDetail(req.db, details);
     res.json({
-      message: "Scrap detail created successfully",
-      id,
+      message: "Scrap detail created successfully"
     });
   } catch (error) {
     console.log(error);
