@@ -7,6 +7,7 @@ import mysql from "mysql2/promise";
 import scrapDetailsRouter from "./routes/scrapDetails.route.js";
 import userRequestRouter from "./routes/scrapRequest.route.js";
 import userRouter from "./routes/users.route.js";
+import collectionRouter from "./routes/scrapCollection.route.js";
 
 // Load env variables
 dotenv.config({ path: "C:/Users/DELL/OneDrive/Desktop/BE Project/Project/env.env" });
@@ -52,6 +53,7 @@ app.use((req, res, next) => {
 app.use("/api/scrapDetails", scrapDetailsRouter);
 app.use("/api/userRequests", userRequestRouter);
 app.use("/api/user", userRouter);
+app.use("/api/collection", collectionRouter);
 
 // ===== Start Server =====
 app.listen(port, () => {

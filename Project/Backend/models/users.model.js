@@ -13,3 +13,8 @@ export async function login(db, {mobile_No,password}) {
     );
     return rows[0];
 }
+
+export async function getUsers(db) {
+    const [rows] = await db.query("SELECT * FROM users where role!='admin'");
+    return rows;
+}
