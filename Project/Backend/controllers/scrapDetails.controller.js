@@ -50,20 +50,38 @@ export const deleteDetails = async (req, res) => {
 export const updatePrice = async (req, res) => {
   const { type } = req.params;
   const { price } = req.body;
-  if (!price) {
+  
+  console.log(`📝 Update price request for type: "${type}", new price: ${price}`);
+  
+  if (!price && price !== 0) {
     return res.status(400).json({ error: "Price is required" });
   }
+  
+  // Validate price is a valid number
+  const numericPrice = parseFloat(price);
+  if (isNaN(numericPrice) || numericPrice < 0) {
+    return res.status(400).json({ error: "Price must be a valid positive number" });
+  }
+  
   try {
+    // Use DECIMAL precision to ensure accurate storage
     const [result] = await req.db.query(
-      "UPDATE scrapDetails SET price = ? WHERE type = ?",
-      [price, type]
+      "UPDATE scrapDetails SET price = ROUND(?, 2) WHERE type = ?",
+      [numericPrice, type]
     );
+    
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Scrap detail not found" });
     }
-    res.json({ message: "Price updated successfully" });
+    
+    console.log(`✅ Price updated successfully for "${type}" to ₹${numericPrice}`);
+    res.json({ 
+      message: "Price updated successfully",
+      updatedPrice: numericPrice,
+      type: type
+    });
   } catch (error) {
-    console.log(error);
+    console.error("❌ Error updating price:", error);
     res.status(500).json({ error: "Error updating price" });
   }
 };

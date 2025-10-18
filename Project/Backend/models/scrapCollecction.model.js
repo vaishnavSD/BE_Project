@@ -1,9 +1,9 @@
 // schema to add collection by agent
 
-export async function scrapCollection(db, {id,agentname,agent_MobileNo,customername,customer_MobileNo,customerEmail,address,totalamount,paymentstatus}) {
+export async function scrapCollection(db, {id,agentname,agent_MobileNo,customername,customer_MobileNo,customerEmail,address,totalamount,paymentstatus,dateNtime}) {
     const [result] = await db.query(
-        "INSERT INTO scrapCollection (id, agentname, agent_MobileNo, customername, customer_MobileNo, customerEmail, address, totalamount, paymentstatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, agentname, agent_MobileNo, customername, customer_MobileNo, customerEmail, address, totalamount, paymentstatus]
+        "INSERT INTO scrapCollection (id, agentname, agent_MobileNo, customername, customer_MobileNo, customerEmail, address, totalamount, paymentstatus, dateNtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, agentname, agent_MobileNo, customername, customer_MobileNo, customerEmail, address, totalamount, paymentstatus, dateNtime]
     );
     return result;
 }

@@ -8,19 +8,21 @@ import scrapDetailsRouter from "./routes/scrapDetails.route.js";
 import userRequestRouter from "./routes/scrapRequest.route.js";
 import userRouter from "./routes/users.route.js";
 import collectionRouter from "./routes/scrapCollection.route.js";
+import reportsRouter from "./routes/reports.route.js";
 
 // Load env variables
-dotenv.config({ path: "C:/Users/DELL/OneDrive/Desktop/BE Project/Project/env.env" });
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
+console.log(process.env.MYSQL_HOST)
 
 // ===== Middleware =====
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: true, // Allow all origins in development
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -50,12 +52,26 @@ app.use((req, res, next) => {
 });
 
 // ===== Routes =====
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "OK", 
+    message: "Server is running", 
+    timestamp: new Date().toISOString(),
+    ip: req.ip 
+  });
+});
+
 app.use("/api/scrapDetails", scrapDetailsRouter);
 app.use("/api/userRequests", userRequestRouter);
 app.use("/api/user", userRouter);
 app.use("/api/collection", collectionRouter);
+app.use("/api/reports", reportsRouter);
 
 // ===== Start Server =====
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${port}`);
+  console.log(`📱 Mobile access: http://10.119.10.133:${port}/api`);
+  console.log(`💻 Local access: http://localhost:${port}/api`);
+  console.log(`🌐 Network access: http://0.0.0.0:${port}/api`);
 });

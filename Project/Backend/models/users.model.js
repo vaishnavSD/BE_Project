@@ -15,6 +15,18 @@ export async function login(db, {mobile_No,password}) {
 }
 
 export async function getUsers(db) {
-    const [rows] = await db.query("SELECT * FROM users where role!='admin'");
+    const [rows] = await db.query("SELECT * FROM users where role!='admin' ORDER BY id DESC");
     return rows;
+}
+
+// Get user by ID
+export async function getUserById(db, id) {
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+    return rows[0];
+}
+
+// Delete user
+export async function deleteUser(db, id) {
+    const [result] = await db.query("DELETE FROM users WHERE id = ?", [id]);
+    return result.affectedRows;
 }
