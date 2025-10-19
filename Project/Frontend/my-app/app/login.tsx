@@ -9,11 +9,12 @@ import {
   Alert,
   Modal 
 } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import { saveUser } from "../src/utils/auth";
 
 export default function Login() {
+  const navigation = useNavigation();
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("agent");
@@ -59,9 +60,9 @@ export default function Login() {
 
         // Navigate based on role
         if (role === "admin") {
-          router.replace("/adminDashboard");
+          navigation.navigate('AdminDashboard' as never);
         } else {
-          router.replace("/userDashboard");
+          navigation.navigate('UserDashboard' as never);
         }
       } else {
         setError("Invalid login response from server");
@@ -156,7 +157,7 @@ export default function Login() {
 
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => router.push("/Home")}
+          onPress={() => navigation.navigate('Home' as never)}
         >
           <Text style={styles.backButtonText}>← Back to Home</Text>
         </TouchableOpacity>

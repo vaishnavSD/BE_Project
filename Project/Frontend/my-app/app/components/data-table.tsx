@@ -1,14 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
-  TextInput,
   TouchableOpacity,
-  Alert,
 } from "react-native";
-import { Feather } from "@expo/vector-icons"; // provides icons like edit, x, check
+// Simplified data table without inline editing
 
 export interface DataEntry {
   id?: number;
@@ -20,13 +17,10 @@ export interface DataEntry {
 interface DataTableProps {
   data: DataEntry[];
   onDelete: (id: number, type: string) => void;
-  onEditPrice: (id: number, type: string, newPrice: number) => void;
+  onEdit: (id: number, type: string, currentPrice: number) => void;
 }
 
-export default function DataTable({ data, onDelete, onEditPrice }: DataTableProps) {
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState<string>("");
-
+export default function DataTable({ data, onDelete, onEdit }: DataTableProps) {
   // Helper function to safely convert and format price
   const formatPrice = (price: number | string | null | undefined): string => {
     const numPrice = Number(price || 0);
@@ -42,104 +36,37 @@ export default function DataTable({ data, onDelete, onEditPrice }: DataTableProp
     return isNaN(numPrice) ? 0 : numPrice;
   };
 
-  const handleStartEdit = (id: number, currentPrice: number) => {
-    console.log('Starting edit for ID:', id, 'Current price:', currentPrice);
-    setEditingId(id);
-    setEditValue(currentPrice.toString());
-  };
-
-  const handleSaveEdit = () => {
-    console.log('Saving edit for ID:', editingId, 'New value:', editValue);
-    
-    if (editingId === null) {
-      console.log('No editing ID set');
-      return;
-    }
-
-    const newPrice = parseFloat(editValue);
-    if (isNaN(newPrice) || newPrice < 0) {
-      Alert.alert("Invalid Input", "Please enter a valid positive number");
-      return;
-    }
-
-    // Round to 2 decimal places for consistency
-    const roundedPrice = Math.round(newPrice * 100) / 100;
-
-    // Find item by ID or by index if ID is not available
-    let item = data.find(d => d.id === editingId);
-    if (!item) {
-      // Fallback to finding by index
-      item = data[editingId];
-    }
-    
-    console.log('Found item for editing:', item);
-    
-    if (item) {
-      console.log('Calling onEditPrice with:', editingId, item.type, roundedPrice);
-      onEditPrice(editingId, item.type, roundedPrice);
-    } else {
-      console.log('Item not found for ID:', editingId);
-      Alert.alert("Error", "Item not found. Please refresh and try again.");
-    }
-    setEditingId(null);
-    setEditValue("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditValue("");
-  };
-
-  const renderRow = ({ item, index }: { item: DataEntry; index: number }) => (
-    <View style={styles.row}>
+  const renderRow = ({ item, index }: { item: DataEntry; index: number }) => {
+    const key = item.id ? item.id.toString() : `fallback-${index}`;
+    return (
+    <View key={key} style={styles.row}>
       <Text style={styles.cell}>{item.category}</Text>
       <Text style={styles.cell}>{item.type}</Text>
       <View style={styles.cell}>
-        {editingId === (item.id || index) ? (
-          <View style={styles.editContainer}>
-            <TextInput
-              style={styles.input}
-              value={editValue}
-              onChangeText={setEditValue}
-              keyboardType="numeric"
-              autoFocus
-            />
-            <TouchableOpacity style={styles.iconButton} onPress={handleSaveEdit}>
-              <Feather name="check" size={16} color="green" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={handleCancelEdit}>
-              <Feather name="x" size={16} color="red" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.rateDisplay}
-            onPress={() => {
-              console.log('Rate clicked for item:', item, 'Index:', index);
-              const itemId = item.id || index;
-              const itemPrice = getNumericPrice(item.price);
-              console.log('Using ID:', itemId, 'Price:', itemPrice, 'Type:', typeof itemPrice, 'Original:', item.price);
-              handleStartEdit(itemId, itemPrice);
-            }}
-          >
-            <Text>₹{formatPrice(item.price)}</Text>
-            <Feather name="edit-2" size={14} color="#6B7280" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.priceContainer}
+          onPress={() => {
+            const itemId = item.id || index;
+            const itemPrice = getNumericPrice(item.price);
+            onEdit(itemId, item.type, itemPrice);
+          }}
+        >
+          <Text style={styles.priceText}>₹{formatPrice(item.price)}</Text>
+          <Text style={styles.editHint}>Tap to edit</Text>
+        </TouchableOpacity>
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => {
-          console.log('Delete button clicked for item:', item, 'Index:', index);
           const itemId = item.id || index;
-          console.log('Calling onDelete with ID:', itemId, 'Type:', item.type);
           onDelete(itemId, item.type);
         }}
       >
-        <Feather name="trash-2" size={16} color="#e74c3c" />
+        <Text style={styles.deleteText}>Delete</Text>
       </TouchableOpacity>
     </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.table}>
@@ -154,15 +81,11 @@ export default function DataTable({ data, onDelete, onEditPrice }: DataTableProp
             <Text style={styles.headerCell}>Price (₹)</Text>
             <Text style={styles.headerCell}>Actions</Text>
           </View>
-          <FlatList
-            data={data}
-            keyExtractor={(item, index) => {
-              const key = item.id ? item.id.toString() : `fallback-${index}`;
-              console.log('Key for item:', key, 'Item:', item);
-              return key;
-            }}
-            renderItem={renderRow}
-          />
+          <View>
+            {data.map((item, index) => 
+              renderRow({ item, index })
+            )}
+          </View>
         </>
       )}
     </View>
@@ -175,11 +98,12 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 8,
     marginTop: 12,
+    backgroundColor: "white",
   },
   row: {
     flexDirection: "row",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     alignItems: "center",
@@ -187,52 +111,42 @@ const styles = StyleSheet.create({
   cell: {
     flex: 1,
     fontSize: 14,
+    paddingHorizontal: 4,
+    color: "#374151",
   },
-  editContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  priceContainer: {
     backgroundColor: "#F0F9FF",
-    padding: 4,
+    padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#667eea",
-  },
-  input: {
-    borderWidth: 2,
-    borderColor: "#667eea",
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    width: 80,
-    marginRight: 6,
-    fontSize: 14,
-    backgroundColor: "#FFFFFF",
-  },
-  iconButton: {
-    padding: 4,
-    marginHorizontal: 2,
-  },
-  rateDisplay: {
-    flexDirection: "row",
+    borderColor: "#3B82F6",
     alignItems: "center",
-    gap: 6,
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: "#F9FAFB",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    minHeight: 36,
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1E40AF",
+    marginBottom: 2,
+  },
+  editHint: {
+    fontSize: 10,
+    color: "#6B7280",
+    fontStyle: "italic",
   },
   deleteButton: {
-    padding: 8,
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 6,
-    backgroundColor: "#FEF2F2",
     borderWidth: 1,
     borderColor: "#FECACA",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 32,
-    minHeight: 32,
+  },
+  deleteText: {
+    color: "#DC2626",
+    fontSize: 12,
+    fontWeight: "600",
   },
   emptyText: {
     textAlign: "center",
@@ -242,7 +156,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     backgroundColor: "#F3F4F6",
     borderBottomWidth: 2,
     borderBottomColor: "#D1D5DB",

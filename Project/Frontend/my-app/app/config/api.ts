@@ -2,11 +2,12 @@ import axios from 'axios';
 
 // Backend API base URLs
 export const API_BASE_URLS = [
-  'http://10.119.10.133:5000/api',  // Current Wi-Fi IP
+  'http://10.249.247.190:5000/api', // Current Wi-Fi IP (for Android/mobile)
+  'http://localhost:5000/api',      // Local development (for web/simulator)
+  'http://10.119.10.133:5000/api',  // Previous Wi-Fi IP
   'http://10.66.57.142:5000/api',   // Previous Wi-Fi IP
   'http://10.177.131.162:5000/api', // Ethernet IP
   'http://192.168.1.100:5000/api',  // Common router IP
-  'http://localhost:5000/api',      // Local development
 ];
 
 export const API_BASE_URL = API_BASE_URLS[0];
@@ -22,16 +23,21 @@ export const apiClient = axios.create({
 
 // Robust API client that tries multiple endpoints
 export const createRobustApiClient = () => {
+  let lastWorkingEndpoint: string | null = null;
+  
   const makeRequest = async (method: string, url: string, data?: any) => {
     const errors: any[] = [];
     
-    for (const baseURL of API_BASE_URLS) {
+    // Try last working endpoint first if available
+    const endpointsToTry = lastWorkingEndpoint 
+      ? [lastWorkingEndpoint, ...API_BASE_URLS.filter(url => url !== lastWorkingEndpoint)]
+      : API_BASE_URLS;
+    
+    for (const baseURL of endpointsToTry) {
       try {
-        console.log(`Trying API: ${baseURL}${url}`);
-        
         const client = axios.create({
           baseURL,
-          timeout: 8000,
+          timeout: 3000, // Reduced timeout for faster fallback
           headers: {
             'Content-Type': 'application/json',
           },
@@ -43,16 +49,18 @@ export const createRobustApiClient = () => {
           data,
         });
         
-        console.log(`Success with: ${baseURL}${url}`);
+        // Cache successful endpoint
+        lastWorkingEndpoint = baseURL;
+        console.log(`✅ API connected: ${baseURL}`);
         return response;
       } catch (error: any) {
-        console.log(`Failed with ${baseURL}${url}:`, error.message);
         errors.push({ baseURL, error: error.message });
         continue;
       }
     }
     
-    console.log('All API endpoints failed:', errors);
+    // Only log summary when all fail
+    console.log(`📡 All ${errors.length} API endpoints unavailable - using offline mode`);
     throw new Error('Unable to connect to server');
   };
   

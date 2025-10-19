@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { getCurrentUser, removeUser, isAgent } from "../src/utils/auth";
 import { createRobustApiClient } from "./config/api";
 
@@ -18,6 +18,7 @@ interface CollectedScrap {
 }
 
 export default function UserDashboard() {
+  const navigation = useNavigation();
   const [user, setUser] = useState<any>(null);
   const [collectedScrap, setCollectedScrap] = useState<CollectedScrap[]>([]);
   const [showCollectedScrap, setShowCollectedScrap] = useState(false);
@@ -26,7 +27,7 @@ export default function UserDashboard() {
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser || !isAgent()) {
-      router.push("/login");
+      navigation.navigate('Login' as never);
       return;
     }
     setUser(currentUser);
@@ -34,7 +35,7 @@ export default function UserDashboard() {
 
   const handleLogout = async () => {
     await removeUser();
-    router.push("/login");
+    navigation.navigate('Login' as never);
   };
 
   const fetchCollectedScrap = async () => {
@@ -136,7 +137,7 @@ export default function UserDashboard() {
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity 
             style={styles.collectBtn} 
-            onPress={() => router.push("/scrapCollection")}
+            onPress={() => navigation.navigate('ScrapCollection' as never)}
           >
             <Text style={styles.collectIcon}>♻️</Text>
             <Text style={styles.collectText}>Collect Scrap</Text>

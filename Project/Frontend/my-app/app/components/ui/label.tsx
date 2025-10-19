@@ -1,24 +1,30 @@
-"use client";
+import React from 'react';
+import { Text, StyleSheet, TextStyle } from 'react-native';
 
-import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-
-import { cn } from "./utils";
-
-function Label({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
-  return (
-    <LabelPrimitive.Root
-      data-slot="label"
-      className={cn(
-        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface LabelProps {
+  children: React.ReactNode;
+  style?: TextStyle;
+  disabled?: boolean;
 }
 
-export default { Label };
+const Label: React.FC<LabelProps> = ({ children, style, disabled = false }) => {
+  return (
+    <Text style={[styles.label, disabled && styles.disabled, style]}>
+      {children}
+    </Text>
+  );
+};
+
+const styles = StyleSheet.create({
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+});
+
+export default Label;

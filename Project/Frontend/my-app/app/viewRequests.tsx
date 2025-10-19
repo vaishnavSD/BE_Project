@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl, Alert } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import AdminProtected from "./components/admin-protected";
 
@@ -17,6 +17,7 @@ interface ScrapRequest {
 }
 
 export default function ViewRequests() {
+  const navigation = useNavigation();
   const [requests, setRequests] = useState<ScrapRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +43,7 @@ export default function ViewRequests() {
     try {
       await apiClient.put(`${API_ENDPOINTS.USER_REQUESTS}/${id}`, { status: newStatus });
       // Update local state
-      setRequests(prev => prev.map(req => 
+      setRequests(prev => prev.map(req =>
         req.id === id ? { ...req, status: newStatus } : req
       ));
       Alert.alert('Success', `Request ${newStatus.toLowerCase()} successfully`);
@@ -105,152 +106,148 @@ export default function ViewRequests() {
 
   return (
     <AdminProtected>
-      <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => {
-            console.log('Back button pressed');
-            try {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push("/adminDashboard");
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log('Back button pressed');
+              try {
+                navigation.navigate('AdminDashboard' as never);
+              } catch (error) {
+                console.log('Navigation error, using fallback:', error);
+                navigation.navigate('AdminDashboard' as never);
               }
-            } catch (error) {
-              console.log('Navigation error, using fallback:', error);
-              router.push("/adminDashboard");
-            }
-          }}
-          style={styles.backButtonContainer}
-        >
-          <Text style={styles.backButton}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Scrap Requests</Text>
-        <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-          <Text style={styles.refreshText}>🔄</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.content}>
-        {loading ? (
-          <View style={styles.centerContainer}>
-            <Text style={styles.loadingText}>Loading requests...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchRequests}>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        ) : requests.length === 0 ? (
-          <View style={styles.centerContainer}>
-            <Text style={styles.emptyText}>No requests found</Text>
-            <Text style={styles.emptySubtext}>New requests will appear here</Text>
-          </View>
-        ) : (
-          <>
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{requests.length}</Text>
-                <Text style={styles.statLabel}>Total</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>
-                  {requests.filter(r => r.status.toLowerCase() === 'pending').length}
-                </Text>
-                <Text style={styles.statLabel}>Pending</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>
-                  {requests.filter(r => r.status.toLowerCase() === 'approved').length}
-                </Text>
-                <Text style={styles.statLabel}>Approved</Text>
-              </View>
+            }}
+            style={styles.backButtonContainer}
+          >
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Scrap Requests</Text>
+          <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
+            <Text style={styles.refreshText}>🔄</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.content}>
+          {loading ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.loadingText}>Loading requests...</Text>
             </View>
-
-            {requests.map((request) => (
-              <View key={request.id} style={styles.requestCard}>
-                <View style={styles.requestHeader}>
-                  <View style={styles.requestInfo}>
-                    <Text style={styles.requestName}>{request.name}</Text>
-                    <Text style={styles.requestId}>ID: #{request.id}</Text>
-                  </View>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
-                    <Text style={styles.statusText}>{request.status}</Text>
-                  </View>
+          ) : error ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={fetchRequests}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : requests.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.emptyText}>No requests found</Text>
+              <Text style={styles.emptySubtext}>New requests will appear here</Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.statsContainer}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>{requests.length}</Text>
+                  <Text style={styles.statLabel}>Total</Text>
                 </View>
-
-                <View style={styles.requestDetails}>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>📱 Mobile:</Text>
-                    <Text style={styles.detailValue}>{request.mobile_No}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>📧 Email:</Text>
-                    <Text style={styles.detailValue}>{request.email}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>📍 Address:</Text>
-                    <Text style={styles.detailValue}>{request.address}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>📅 Pickup Date:</Text>
-                    <Text style={styles.detailValue}>{formatDate(request.pickUp_Date)}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>⏰ Time Slot:</Text>
-                    <Text style={styles.detailValue}>{request.time_slot}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>📝 Description:</Text>
-                    <Text style={styles.detailValue}>{request.description}</Text>
-                  </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>
+                    {requests.filter(r => r.status.toLowerCase() === 'pending').length}
+                  </Text>
+                  <Text style={styles.statLabel}>Pending</Text>
                 </View>
-
-                <View style={styles.actionButtons}>
-                  {request.status.toLowerCase() === 'pending' && (
-                    <>
-                      <TouchableOpacity 
-                        style={[styles.actionBtn, styles.approveBtn]}
-                        onPress={() => updateRequestStatus(request.id, 'Approved')}
-                      >
-                        <Text style={styles.actionBtnText}>✓ Approve</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.actionBtn, styles.rejectBtn]}
-                        onPress={() => updateRequestStatus(request.id, 'Rejected')}
-                      >
-                        <Text style={styles.actionBtnText}>✗ Reject</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                  {request.status.toLowerCase() === 'approved' && (
-                    <TouchableOpacity 
-                      style={[styles.actionBtn, styles.completeBtn]}
-                      onPress={() => updateRequestStatus(request.id, 'Completed')}
-                    >
-                      <Text style={styles.actionBtnText}>✓ Mark Complete</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity 
-                    style={[styles.actionBtn, styles.deleteBtn]}
-                    onPress={() => deleteRequest(request.id)}
-                  >
-                    <Text style={styles.actionBtnText}>🗑 Delete</Text>
-                  </TouchableOpacity>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>
+                    {requests.filter(r => r.status.toLowerCase() === 'approved').length}
+                  </Text>
+                  <Text style={styles.statLabel}>Approved</Text>
                 </View>
               </View>
-            ))}
-          </>
-        )}
-      </View>
-    </ScrollView>
+
+              {requests.map((request) => (
+                <View key={request.id} style={styles.requestCard}>
+                  <View style={styles.requestHeader}>
+                    <View style={styles.requestInfo}>
+                      <Text style={styles.requestName}>{request.name}</Text>
+                      <Text style={styles.requestId}>ID: #{request.id}</Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
+                      <Text style={styles.statusText}>{request.status}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.requestDetails}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>📱 Mobile:</Text>
+                      <Text style={styles.detailValue}>{request.mobile_No}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>📧 Email:</Text>
+                      <Text style={styles.detailValue}>{request.email}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>📍 Address:</Text>
+                      <Text style={styles.detailValue}>{request.address}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>📅 Pickup Date:</Text>
+                      <Text style={styles.detailValue}>{formatDate(request.pickUp_Date)}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>⏰ Time Slot:</Text>
+                      <Text style={styles.detailValue}>{request.time_slot}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>📝 Description:</Text>
+                      <Text style={styles.detailValue}>{request.description}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.actionButtons}>
+                    {request.status.toLowerCase() === 'pending' && (
+                      <>
+                        <TouchableOpacity
+                          style={[styles.actionBtn, styles.approveBtn]}
+                          onPress={() => updateRequestStatus(request.id, 'Approved')}
+                        >
+                          <Text style={styles.actionBtnText}>✓ Approve</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.actionBtn, styles.rejectBtn]}
+                          onPress={() => updateRequestStatus(request.id, 'Rejected')}
+                        >
+                          <Text style={styles.actionBtnText}>✗ Reject</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                    {request.status.toLowerCase() === 'approved' && (
+                      <TouchableOpacity
+                        style={[styles.actionBtn, styles.completeBtn]}
+                        onPress={() => updateRequestStatus(request.id, 'Completed')}
+                      >
+                        <Text style={styles.actionBtnText}>✓ Mark Complete</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      style={[styles.actionBtn, styles.deleteBtn]}
+                      onPress={() => deleteRequest(request.id)}
+                    >
+                      <Text style={styles.actionBtnText}>🗑 Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+        </View>
+      </ScrollView>
     </AdminProtected>
   );
 }

@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { getCurrentUser, removeUser, isAdmin } from "../src/utils/auth";
 import AdminProtected from "./components/admin-protected";
 
 export default function AdminDashboard() {
+  const navigation = useNavigation();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser || !isAdmin()) {
-      router.push("/login");
+      navigation.navigate('Login' as never);
       return;
     }
     setUser(currentUser);
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     await removeUser();
-    router.push("/login");
+    navigation.navigate('Login' as never);
   };
 
   if (!user) {
@@ -63,14 +64,14 @@ export default function AdminDashboard() {
           
           {/* Primary Actions Row */}
           <View style={styles.primaryActionsRow}>
-            <TouchableOpacity style={[styles.actionBtn, styles.primaryAction]} onPress={() => router.push("/viewRequests")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.primaryAction]} onPress={() => navigation.navigate('ViewRequests' as never)}>
               <View style={styles.actionIconContainer}>
                 <Text style={styles.actionIcon}>📝</Text>
               </View>
               <Text style={styles.actionTitle}>View Requests</Text>
               <Text style={styles.actionSubtitle}>Manage customer requests</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.primaryAction]} onPress={() => router.push("/viewCollections")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.primaryAction]} onPress={() => navigation.navigate('ViewCollections' as never)}>
               <View style={styles.actionIconContainer}>
                 <Text style={styles.actionIcon}>🚚</Text>
               </View>
@@ -81,25 +82,25 @@ export default function AdminDashboard() {
 
           {/* Secondary Actions Grid */}
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => router.push("/scrapDetails")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('ScrapDetails' as never)}>
               <View style={styles.smallIconContainer}>
                 <Text style={styles.smallActionIcon}>📋</Text>
               </View>
               <Text style={styles.secondaryActionText}>Scrap Details</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => router.push("/manageAgents")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('ManageAgents' as never)}>
               <View style={styles.smallIconContainer}>
                 <Text style={styles.smallActionIcon}>👥</Text>
               </View>
               <Text style={styles.secondaryActionText}>Manage Agents</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => router.push("/reports")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('Reports' as never)}>
               <View style={styles.smallIconContainer}>
                 <Text style={styles.smallActionIcon}>📊</Text>
               </View>
               <Text style={styles.secondaryActionText}>Reports</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => router.push("/Home")}>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('Home' as never)}>
               <View style={styles.smallIconContainer}>
                 <Text style={styles.smallActionIcon}>⚙️</Text>
               </View>

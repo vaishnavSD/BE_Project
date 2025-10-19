@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import { ScrollView, View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Modal, TextInput } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import AddDataForm from "./components/add-data-form";
 import DataTable from "./components/data-table";
@@ -14,9 +14,15 @@ type ScrapEntry = {
 };
 
 export default function ScrapDetails() {
+  const navigation = useNavigation();
   const [data, setData] = useState<ScrapEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<{id: number, type: string, currentPrice: number} | null>(null);
+  const [editPrice, setEditPrice] = useState("");
 
   const apiClient = createRobustApiClient();
 
@@ -143,30 +149,56 @@ export default function ScrapDetails() {
     );
   };
 
-  // Edit price via backend
-  const handleEditPrice = async (id: number, type: string, newPrice: number) => {
+  // Open edit modal
+  const handleEditPrice = (id: number, type: string, currentPrice: number) => {
+    setEditingItem({ id, type, currentPrice });
+    setEditPrice(currentPrice.toString());
+    setShowEditModal(true);
+  };
+
+  // Save edited price
+  const handleSaveEditedPrice = async () => {
+    if (!editingItem) return;
+
+    const trimmedValue = editPrice.trim();
+    if (!trimmedValue) {
+      Alert.alert("Invalid Input", "Please enter a price value");
+      return;
+    }
+
+    const newPrice = parseFloat(trimmedValue);
+    if (isNaN(newPrice) || newPrice < 0) {
+      Alert.alert("Invalid Input", "Please enter a valid positive number");
+      return;
+    }
+
+    if (newPrice > 10000) {
+      Alert.alert("Invalid Input", "Price cannot exceed ₹10,000 per kg");
+      return;
+    }
+
+    const roundedPrice = Math.round(newPrice * 100) / 100;
+    
     try {
-      console.log('Updating price for:', type, 'ID:', id, 'New price:', newPrice);
+      console.log('Updating price for:', editingItem.type, 'ID:', editingItem.id, 'New price:', roundedPrice);
       
-      // Validate price on frontend
-      if (isNaN(newPrice) || newPrice < 0) {
-        Alert.alert("Invalid Price", "Please enter a valid positive number");
-        return;
-      }
-      
-      const response = await apiClient.put(`${API_ENDPOINTS.SCRAP_DETAILS}/update/${encodeURIComponent(type)}`, { 
-        price: Number(newPrice.toFixed(2)) // Ensure 2 decimal places
+      const response = await apiClient.put(`${API_ENDPOINTS.SCRAP_DETAILS}/update/${encodeURIComponent(editingItem.type)}`, { 
+        price: Number(roundedPrice.toFixed(2))
       });
       
       console.log('Update response:', response.data);
       
-      const updatedPrice = response.data.updatedPrice || newPrice;
+      const updatedPrice = response.data.updatedPrice || roundedPrice;
       Alert.alert(
         "Success", 
-        `Price updated successfully!\n${type}: ₹${updatedPrice.toFixed(2)}`
+        `Price updated successfully!\n${editingItem.type}: ₹${updatedPrice.toFixed(2)}`
       );
       
-      await fetchData(); // Refetch data after price update
+      // Close modal and refresh data
+      setShowEditModal(false);
+      setEditingItem(null);
+      setEditPrice("");
+      await fetchData();
     } catch (err: any) {
       console.error("Error updating price:", err);
       
@@ -186,22 +218,26 @@ export default function ScrapDetails() {
     }
   };
 
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    setEditingItem(null);
+    setEditPrice("");
+  };
+
+
+
   return (
     <AdminProtected>
-      <ScrollView style={{ flex: 1 }}>
       <View style={styles.container}>
         {/* Header with Back Button */}
         <View style={styles.header}>
           <TouchableOpacity 
             onPress={() => {
               try {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.push("/adminDashboard");
-                }
+                navigation.navigate('AdminDashboard' as never);
               } catch (error) {
-                router.push("/adminDashboard");
+                navigation.navigate('AdminDashboard' as never);
               }
             }}
             style={styles.backButton}
@@ -218,36 +254,86 @@ export default function ScrapDetails() {
           Manage scrap categories, types, and pricing information
         </Text>
 
-        <AddDataForm onAdd={handleAddEntry} />
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <AddDataForm onAdd={handleAddEntry} />
 
-        <Text style={styles.subtitle}>Current Data ({data.length} entries)</Text>
+          <Text style={styles.subtitle}>Current Data ({data.length} entries)</Text>
 
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#667eea" />
-            <Text style={styles.loadingText}>Loading scrap details...</Text>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#667eea" />
+              <Text style={styles.loadingText}>Loading scrap details...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : data.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No scrap details found</Text>
+              <Text style={styles.emptySubtext}>Add your first scrap category above</Text>
+            </View>
+          ) : (
+            <DataTable
+              data={data}
+              onDelete={(id: number, type: string) => handleDeleteEntry(id, type)}
+              onEdit={(id: number, type: string, currentPrice: number) => handleEditPrice(id, type, currentPrice)}
+            />
+          )}
+        </ScrollView>
+
+        {/* Edit Price Modal */}
+        <Modal
+          visible={showEditModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={handleCancelEdit}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Edit Price</Text>
+              
+              {editingItem && (
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemCategory}>{editingItem.type}</Text>
+                  <Text style={styles.currentPrice}>Current: ₹{editingItem.currentPrice.toFixed(2)}</Text>
+                </View>
+              )}
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>New Price (₹)</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  value={editPrice}
+                  onChangeText={setEditPrice}
+                  keyboardType="numeric"
+                  placeholder="0.00"
+                  autoFocus
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={styles.cancelButton} 
+                  onPress={handleCancelEdit}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.saveButton} 
+                  onPress={handleSaveEditedPrice}
+                >
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        ) : data.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No scrap details found</Text>
-            <Text style={styles.emptySubtext}>Add your first scrap category above</Text>
-          </View>
-        ) : (
-          <DataTable
-            data={data}
-            onDelete={(id: number, type: string) => handleDeleteEntry(id, type)}
-            onEditPrice={(id: number, type: string, newPrice: number) => handleEditPrice(id, type, newPrice)}
-          />
-        )}
+        </Modal>
       </View>
-    </ScrollView>
     </AdminProtected>
   );
 }
@@ -342,5 +428,96 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#7f8c8d',
     textAlign: 'center',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  itemInfo: {
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  itemCategory: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  currentPrice: {
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  inputContainer: {
+    marginBottom: 24,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 8,
+  },
+  priceInput: {
+    borderWidth: 2,
+    borderColor: '#667eea',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 18,
+    textAlign: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#6c757d',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#28a745',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

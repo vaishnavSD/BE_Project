@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import AdminProtected from "./components/admin-protected";
 
@@ -27,6 +27,7 @@ interface Collection {
 }
 
 export default function ViewCollections() {
+  const navigation = useNavigation();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -131,13 +132,9 @@ export default function ViewCollections() {
         <TouchableOpacity 
           onPress={() => {
             try {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push("/adminDashboard");
-              }
+              navigation.navigate('AdminDashboard' as never);
             } catch (error) {
-              router.push("/adminDashboard");
+              navigation.navigate('AdminDashboard' as never);
             }
           }}
           style={styles.backButtonContainer}

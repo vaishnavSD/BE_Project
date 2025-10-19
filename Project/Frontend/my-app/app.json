@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "ScrapWale",
+    "slug": "scrapwale",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1e9d47"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1e9d47"
+      },
+      "package": "com.scrapwale.app"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

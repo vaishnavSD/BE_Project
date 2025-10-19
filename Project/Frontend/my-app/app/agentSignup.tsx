@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, ActivityIndicator } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { ValidationHelpers } from "../src/utils/validation";
 import ValidationError from "./components/validation-error";
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 
 export default function AgentSignup() {
+  const navigation = useNavigation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -163,7 +164,7 @@ export default function AgentSignup() {
               });
               setFieldErrors({});
               // Navigate back to manage agents
-              router.push('/manageAgents');
+              navigation.navigate('ManageAgents' as never);
             }
           }
         ]
@@ -214,15 +215,7 @@ export default function AgentSignup() {
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => {
-            try {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push("/manageAgents");
-              }
-            } catch (error) {
-              router.push("/manageAgents");
-            }
+            navigation.navigate('ManageAgents' as never);
           }}
           style={styles.backButtonContainer}
         >

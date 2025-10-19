@@ -26,6 +26,29 @@ export async function addRequest(req, res) {
       return res.status(400).json({ errors: "Mobile number should be 10-15 digits" });
     }
 
+    // Validate pickup date
+    const pickupDate = new Date(pickUp_Date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (isNaN(pickupDate.getTime())) {
+      console.log("❌ Validation failed - invalid pickup date format");
+      return res.status(400).json({ errors: "Invalid pickup date format" });
+    }
+    
+    if (pickupDate < today) {
+      console.log("❌ Validation failed - pickup date in the past");
+      return res.status(400).json({ errors: "Pickup date cannot be in the past" });
+    }
+    
+    // Check if pickup date is too far in the future (30 days limit)
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    if (pickupDate > maxDate) {
+      console.log("❌ Validation failed - pickup date too far in future");
+      return res.status(400).json({ errors: "Pickup date cannot be more than 30 days from today" });
+    }
+
     const userDetails = {
       name,
       email,

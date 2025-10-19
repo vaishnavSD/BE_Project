@@ -11,11 +11,17 @@ import collectionRouter from "./routes/scrapCollection.route.js";
 import reportsRouter from "./routes/reports.route.js";
 
 // Load env variables
-dotenv.config();
+dotenv.config({ path: "./.env" });
 
 const app = express();
 const port = process.env.PORT || 5000;
-console.log(process.env.MYSQL_HOST)
+
+// Debug: Check if env variables are loaded
+console.log("🔍 Environment variables check:");
+console.log("PORT:", process.env.PORT);
+console.log("MYSQL_HOST:", process.env.MYSQL_HOST);
+console.log("MYSQL_USER:", process.env.MYSQL_USER);
+console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
 
 // ===== Middleware =====
 app.use(express.json());
@@ -54,11 +60,11 @@ app.use((req, res, next) => {
 // ===== Routes =====
 // Health check endpoint
 app.get("/api/health", (req, res) => {
-  res.json({ 
-    status: "OK", 
-    message: "Server is running", 
+  res.json({
+    status: "OK",
+    message: "Server is running",
     timestamp: new Date().toISOString(),
-    ip: req.ip 
+    ip: req.ip
   });
 });
 
@@ -71,7 +77,7 @@ app.use("/api/reports", reportsRouter);
 // ===== Start Server =====
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${port}`);
-  console.log(`📱 Mobile access: http://10.119.10.133:${port}/api`);
+  console.log(`📱 Mobile access: http://10.249.247.190:${port}/api`);
   console.log(`💻 Local access: http://localhost:${port}/api`);
   console.log(`🌐 Network access: http://0.0.0.0:${port}/api`);
 });

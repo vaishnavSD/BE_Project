@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl, ActivityIndicator, Alert } from "react-native";
 import { Picker } from '@react-native-picker/picker';
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import AdminProtected from "./components/admin-protected";
 import { BarChart, PieChart } from "./components/chart-components";
@@ -44,6 +44,7 @@ interface TopCustomer {
 }
 
 export default function Reports() {
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -249,13 +250,9 @@ export default function Reports() {
           <TouchableOpacity 
             onPress={() => {
               try {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.push("/adminDashboard");
-                }
+                navigation.navigate('AdminDashboard' as never);
               } catch (error) {
-                router.push("/adminDashboard");
+                navigation.navigate('AdminDashboard' as never);
               }
             }}
             style={styles.backButtonContainer}

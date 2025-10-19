@@ -1,41 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, RefObject } from "react";
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import { router } from 'expo-router';
 import { API_ENDPOINTS, createRobustApiClient } from "./config/api";
 
-export default function App() {
+export default function Home() {
     const [scrapRates, setScrapRates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const scrollViewRef = useRef<ScrollView>(null);
-
     useEffect(() => {
         fetchScrapRates();
     }, []);
-
-    // Auto-scroll effect for continuous scrolling
-    useEffect(() => {
-        if (!loading && scrapRates.length > 0) {
-            let scrollPosition = 0;
-            const itemWidth = 195; // Width of each rate item including margin
-            const maxScroll = (scrapRates.length * 3 - 2) * itemWidth; // Total scrollable width
-            
-            const scrollInterval = setInterval(() => {
-                if (scrollViewRef.current) {
-                    scrollPosition += itemWidth;
-                    if (scrollPosition >= maxScroll) {
-                        scrollPosition = 0; // Reset to beginning for continuous loop
-                    }
-                    
-                    scrollViewRef.current.scrollTo({
-                        x: scrollPosition,
-                        animated: true,
-                    });
-                }
-            }, 4000); // Scroll every 4 seconds
-
-            return () => clearInterval(scrollInterval);
-        }
-    }, [loading, scrapRates]);
 
     const fetchScrapRates = async () => {
         try {
@@ -124,10 +97,9 @@ export default function App() {
                         </View>
                     </View>
                     <Text style={styles.sectionSubtitle}>Swipe to explore • Updated daily</Text>
-                    <ScrollView 
-                        ref={scrollViewRef}
-                        horizontal 
-                        showsHorizontalScrollIndicator={false} 
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
                         style={styles.rateSlider}
                         contentContainerStyle={styles.rateSliderContent}
                         decelerationRate="fast"
@@ -149,6 +121,7 @@ export default function App() {
                         ) : scrapRates.length > 0 ? (
                             // Duplicate the array to create continuous scrolling effect
                             [...scrapRates, ...scrapRates, ...scrapRates].map((item, index) => (
+                                // @ts-ignore
                                 <View style={styles.rateItem} key={`rate-${index}`}>
                                     <View style={styles.rateItemContent}>
                                         <Text style={styles.rateIcon}>{getCategoryIcon(item.category)}</Text>
@@ -175,6 +148,7 @@ export default function App() {
                                 { type: 'Iron', category: 'metal', price: 25 },
                                 { type: 'Plastic Bottles', category: 'plastic', price: 8 },
                             ].map((item, index) => (
+                                // @ts-ignore
                                 <View style={styles.rateItem} key={`fallback-${index}`}>
                                     <View style={styles.rateItemContent}>
                                         <Text style={styles.rateIcon}>{getCategoryIcon(item.category)}</Text>

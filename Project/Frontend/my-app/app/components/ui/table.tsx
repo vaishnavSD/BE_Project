@@ -1,116 +1,161 @@
-"use client";
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
-import * as React from "react";
-
-import { cn } from "./utils";
-
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
-  );
+interface TableProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return (
-    <thead
-      data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
-      {...props}
-    />
-  );
+interface TableHeaderProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody
-      data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
-    />
-  );
+interface TableBodyProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
-  return (
-    <tfoot
-      data-slot="table-footer"
-      className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface TableFooterProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-  return (
-    <tr
-      data-slot="table-row"
-      className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface TableRowProps {
+  children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
-  return (
-    <th
-      data-slot="table-head"
-      className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface TableHeadProps {
+  children: React.ReactNode;
+  style?: TextStyle;
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return (
-    <td
-      data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface TableCellProps {
+  children: React.ReactNode;
+  style?: TextStyle;
 }
 
-function TableCaption({
-  className,
-  ...props
-}: React.ComponentProps<"caption">) {
-  return (
-    <caption
-      data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
-      {...props}
-    />
-  );
+interface TableCaptionProps {
+  children: React.ReactNode;
+  style?: TextStyle;
 }
 
-export default {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption,
+const Table: React.FC<TableProps> = ({ children, style }) => {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View style={[styles.table, style]}>
+        {children}
+      </View>
+    </ScrollView>
+  );
 };
+
+const TableHeader: React.FC<TableHeaderProps> = ({ children, style }) => {
+  return (
+    <View style={[styles.tableHeader, style]}>
+      {children}
+    </View>
+  );
+};
+
+const TableBody: React.FC<TableBodyProps> = ({ children, style }) => {
+  return (
+    <View style={[styles.tableBody, style]}>
+      {children}
+    </View>
+  );
+};
+
+const TableFooter: React.FC<TableFooterProps> = ({ children, style }) => {
+  return (
+    <View style={[styles.tableFooter, style]}>
+      {children}
+    </View>
+  );
+};
+
+const TableRow: React.FC<TableRowProps> = ({ children, style }) => {
+  return (
+    <View style={[styles.tableRow, style]}>
+      {children}
+    </View>
+  );
+};
+
+const TableHead: React.FC<TableHeadProps> = ({ children, style }) => {
+  return (
+    <Text style={[styles.tableHead, style]}>
+      {children}
+    </Text>
+  );
+};
+
+const TableCell: React.FC<TableCellProps> = ({ children, style }) => {
+  return (
+    <Text style={[styles.tableCell, style]}>
+      {children}
+    </Text>
+  );
+};
+
+const TableCaption: React.FC<TableCaptionProps> = ({ children, style }) => {
+  return (
+    <Text style={[styles.tableCaption, style]}>
+      {children}
+    </Text>
+  );
+};
+
+const styles = StyleSheet.create({
+  table: {
+    minWidth: '100%',
+    backgroundColor: '#FFFFFF',
+  },
+  tableHeader: {
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  tableBody: {
+    // No specific styles needed
+  },
+  tableFooter: {
+    backgroundColor: '#F9FAFB',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    minHeight: 40,
+    alignItems: 'center',
+  },
+  tableHead: {
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'left',
+  },
+  tableCell: {
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'left',
+  },
+  tableCaption: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+});
+
+export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };
+export default Table;

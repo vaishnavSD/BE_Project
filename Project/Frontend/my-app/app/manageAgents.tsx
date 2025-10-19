@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, RefreshControl, Alert, TextInput } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { createRobustApiClient, API_ENDPOINTS } from "./config/api";
 import EditAgentModal from "./components/edit-agent-modal";
 import AdminProtected from "./components/admin-protected";
@@ -17,6 +17,7 @@ interface Agent {
 }
 
 export default function ManageAgents() {
+  const navigation = useNavigation();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -194,13 +195,9 @@ export default function ManageAgents() {
         <TouchableOpacity 
           onPress={() => {
             try {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push("/adminDashboard");
-              }
+              navigation.navigate('AdminDashboard' as never);
             } catch (error) {
-              router.push("/adminDashboard");
+              navigation.navigate('AdminDashboard' as never);
             }
           }}
           style={styles.backButtonContainer}
@@ -218,7 +215,7 @@ export default function ManageAgents() {
         <View style={styles.actionSection}>
           <TouchableOpacity 
             style={styles.addAgentBtn} 
-            onPress={() => router.push("/agentSignup")}
+            onPress={() => navigation.navigate('AgentSignup' as never)}
           >
             <Text style={styles.addAgentIcon}>👤</Text>
             <Text style={styles.addAgentText}>Add New Agent</Text>

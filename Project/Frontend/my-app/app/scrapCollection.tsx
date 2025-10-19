@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Modal 
 } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { getCurrentUserAsync } from "../src/utils/auth";
 import { createRobustApiClient } from "./config/api";
 
@@ -75,7 +75,7 @@ export default function ScrapCollection() {
       } else {
         console.warn("No user found, redirecting to login");
         Alert.alert("Error", "Please login first", [
-          { text: "OK", onPress: () => router.push("/login") }
+          { text: "OK", onPress: () => navigation.navigate('Login' as never) }
         ]);
         return;
       }
@@ -282,7 +282,7 @@ export default function ScrapCollection() {
       Alert.alert(
         "Success", 
         "Scrap collection recorded successfully!",
-        [{ text: "OK", onPress: () => router.push("/userDashboard") }]
+        [{ text: "OK", onPress: () => navigation.navigate('UserDashboard' as never) }]
       );
       
     } catch (error: any) {
@@ -314,7 +314,7 @@ export default function ScrapCollection() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/userDashboard")}>
+        <TouchableOpacity onPress={() => navigation.navigate('UserDashboard' as never)}>
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Scrap Collection Form</Text>

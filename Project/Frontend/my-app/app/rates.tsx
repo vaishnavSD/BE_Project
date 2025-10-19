@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from "react-native";
-import { router } from "expo-router";
-import { apiClient, API_ENDPOINTS } from "./config/api";
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, ActivityIndicator } from "react-native";
+import { dataService, ScrapRate } from "./services/dataService";
+import { useNavigation } from '@react-navigation/native';
 
 export default function RatesPage() {
-    const [scrapRates, setScrapRates] = useState<any[]>([]);
+    const navigation = useNavigation();
+    const [scrapRates, setScrapRates] = useState<ScrapRate[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -17,8 +18,8 @@ export default function RatesPage() {
         quantity: 0,
         totalAmount: 0
     });
-    const [availableTypes, setAvailableTypes] = useState<any[]>([]);
-    
+    const [availableTypes, setAvailableTypes] = useState<ScrapRate[]>([]);
+
     // Dropdown states
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [showTypeDropdown, setShowTypeDropdown] = useState(false);
@@ -28,14 +29,13 @@ export default function RatesPage() {
     }, []);
 
     const fetchScrapRates = async () => {
+        setLoading(true);
+        
         try {
-            console.log("Fetching scrap rates from:", `${API_ENDPOINTS.SCRAP_DETAILS}/get`);
-            const response = await apiClient.get(`${API_ENDPOINTS.SCRAP_DETAILS}/get`);
-            console.log("Scrap rates received:", response.data);
-            setScrapRates(response.data);
+            const rates = await dataService.getScrapRates();
+            setScrapRates(rates);
         } catch (error: any) {
             console.error("Error fetching scrap rates:", error);
-            console.error("Error response:", error.response?.data);
         } finally {
             setLoading(false);
         }
@@ -124,7 +124,7 @@ export default function RatesPage() {
             <View style={styles.header}>
                 <View style={styles.navbar}>
                     <Text style={styles.logo}>♻ ScrapWale</Text>
-                    <TouchableOpacity onPress={() => router.push('/Home')}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Home' as never)}>
                         <Text style={styles.backButton}>← Back to Home</Text>
                     </TouchableOpacity>
                 </View>
@@ -135,7 +135,7 @@ export default function RatesPage() {
                 <Text style={styles.subtitle}>Calculate the value of your scrap materials instantly</Text>
 
                 {/* Calculator Toggle Button */}
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.toggleButton}
                     onPress={() => setShowCalculator(!showCalculator)}
                     activeOpacity={0.8}
@@ -154,89 +154,89 @@ export default function RatesPage() {
                 {/* Calculator Section */}
                 {showCalculator && (
                     <View style={styles.calculatorContainer}>
-                    <View style={styles.calculatorHeader}>
-                        <Text style={styles.calculatorIcon}>🧮</Text>
-                        <Text style={styles.calculatorTitle}>Scrap Calculator</Text>
-                    </View>
-                    <Text style={styles.calculatorSubtitle}>Select your scrap category and type to calculate the total amount</Text>
-
-                    {loading ? (
-                        <View style={styles.loadingContainer}>
-                            <Text style={styles.loadingText}>Loading calculator...</Text>
+                        <View style={styles.calculatorHeader}>
+                            <Text style={styles.calculatorIcon}>🧮</Text>
+                            <Text style={styles.calculatorTitle}>Scrap Calculator</Text>
                         </View>
-                    ) : (
-                        <View style={styles.calculatorForm}>
-                            {/* Category Dropdown */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Category</Text>
-                                <TouchableOpacity 
-                                    style={styles.dropdownButton}
-                                    onPress={() => setShowCategoryDropdown(true)}
-                                >
-                                    <Text style={[styles.dropdownButtonText, !calculatorData.category && styles.placeholderText]}>
-                                        {calculatorData.category ? 
-                                            calculatorData.category.charAt(0).toUpperCase() + calculatorData.category.slice(1) : 
-                                            'Select Category'
-                                        }
-                                    </Text>
-                                    <Text style={styles.dropdownArrow}>▼</Text>
-                                </TouchableOpacity>
-                            </View>
+                        <Text style={styles.calculatorSubtitle}>Select your scrap category and type to calculate the total amount</Text>
 
-                            {/* Type Dropdown */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Type</Text>
-                                <TouchableOpacity 
-                                    style={[styles.dropdownButton, !calculatorData.category && styles.dropdownButtonDisabled]}
-                                    onPress={() => calculatorData.category && setShowTypeDropdown(true)}
-                                    disabled={!calculatorData.category}
-                                >
-                                    <Text style={[styles.dropdownButtonText, !calculatorData.type && styles.placeholderText]}>
-                                        {calculatorData.type || 'Select Type'}
-                                    </Text>
-                                    <Text style={styles.dropdownArrow}>▼</Text>
-                                </TouchableOpacity>
+                        {loading ? (
+                            <View style={styles.loadingContainer}>
+                                <Text style={styles.loadingText}>Loading calculator...</Text>
                             </View>
-
-                            {/* Rate Display */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Rate (₹/kg)</Text>
-                                <View style={styles.rateDisplay}>
-                                    <Text style={styles.rateValue}>₹{calculatorData.rate}</Text>
+                        ) : (
+                            <View style={styles.calculatorForm}>
+                                {/* Category Dropdown */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Category</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => setShowCategoryDropdown(true)}
+                                    >
+                                        <Text style={[styles.dropdownButtonText, !calculatorData.category && styles.placeholderText]}>
+                                            {calculatorData.category ?
+                                                calculatorData.category.charAt(0).toUpperCase() + calculatorData.category.slice(1) :
+                                                'Select Category'
+                                            }
+                                        </Text>
+                                        <Text style={styles.dropdownArrow}>▼</Text>
+                                    </TouchableOpacity>
                                 </View>
-                            </View>
 
-                            {/* Quantity Input */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Quantity (kg)</Text>
-                                <TextInput
-                                    style={styles.quantityInput}
-                                    value={calculatorData.quantity.toString()}
-                                    onChangeText={(text) => {
-                                        const quantity = parseFloat(text) || 0;
-                                        handleQuantityChange(quantity);
-                                    }}
-                                    placeholder="Enter quantity"
-                                    keyboardType="numeric"
-                                />
-                            </View>
+                                {/* Type Dropdown */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Type</Text>
+                                    <TouchableOpacity
+                                        style={[styles.dropdownButton, !calculatorData.category && styles.dropdownButtonDisabled]}
+                                        onPress={() => calculatorData.category && setShowTypeDropdown(true)}
+                                        disabled={!calculatorData.category}
+                                    >
+                                        <Text style={[styles.dropdownButtonText, !calculatorData.type && styles.placeholderText]}>
+                                            {calculatorData.type || 'Select Type'}
+                                        </Text>
+                                        <Text style={styles.dropdownArrow}>▼</Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                            {/* Total Amount Display */}
-                            <View style={styles.totalContainer}>
-                                <Text style={styles.totalLabel}>Total Amount</Text>
-                                <Text style={styles.totalAmount}>₹{calculatorData.totalAmount.toFixed(2)}</Text>
-                                <Text style={styles.calculationBreakdown}>
-                                    {calculatorData.quantity} kg × ₹{calculatorData.rate}/kg
-                                </Text>
-                            </View>
+                                {/* Rate Display */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Rate (₹/kg)</Text>
+                                    <View style={styles.rateDisplay}>
+                                        <Text style={styles.rateValue}>₹{calculatorData.rate}</Text>
+                                    </View>
+                                </View>
 
-                            {/* Reset Button */}
-                            <TouchableOpacity style={styles.resetButton} onPress={resetCalculator}>
-                                <Text style={styles.resetButtonText}>Reset Calculator</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </View>
+                                {/* Quantity Input */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Quantity (kg)</Text>
+                                    <TextInput
+                                        style={styles.quantityInput}
+                                        value={calculatorData.quantity.toString()}
+                                        onChangeText={(text) => {
+                                            const quantity = parseFloat(text) || 0;
+                                            handleQuantityChange(quantity);
+                                        }}
+                                        placeholder="Enter quantity"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+
+                                {/* Total Amount Display */}
+                                <View style={styles.totalContainer}>
+                                    <Text style={styles.totalLabel}>Total Amount</Text>
+                                    <Text style={styles.totalAmount}>₹{calculatorData.totalAmount.toFixed(2)}</Text>
+                                    <Text style={styles.calculationBreakdown}>
+                                        {calculatorData.quantity} kg × ₹{calculatorData.rate}/kg
+                                    </Text>
+                                </View>
+
+                                {/* Reset Button */}
+                                <TouchableOpacity style={styles.resetButton} onPress={resetCalculator}>
+                                    <Text style={styles.resetButtonText}>Reset Calculator</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
                 )}
 
                 {/* Current Rates Section */}
@@ -246,48 +246,52 @@ export default function RatesPage() {
 
                     {/* Category Filter */}
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryFilter}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.categoryButton, selectedCategory === 'all' && styles.categoryButtonActive]}
                             onPress={() => setSelectedCategory('all')}
                         >
                             <Text style={[styles.categoryButtonText, selectedCategory === 'all' && styles.categoryButtonTextActive]}>All</Text>
                         </TouchableOpacity>
-                        {getCategories().map((category: string, index: number) => (
-                            <TouchableOpacity 
-                                key={index}
-                                style={[styles.categoryButton, selectedCategory === category && styles.categoryButtonActive]}
-                                onPress={() => setSelectedCategory(category)}
-                            >
-                                <Text style={[styles.categoryButtonText, selectedCategory === category && styles.categoryButtonTextActive]}>
-                                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                                </Text>
-                            </TouchableOpacity>
+                        {getCategories().map((category: string) => (
+                            // @ts-ignore
+                            <View key={category}>
+                                <TouchableOpacity
+                                    style={[styles.categoryButton, selectedCategory === category && styles.categoryButtonActive]}
+                                    onPress={() => setSelectedCategory(category)}
+                                >
+                                    <Text style={[styles.categoryButtonText, selectedCategory === category && styles.categoryButtonTextActive]}>
+                                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                         ))}
                     </ScrollView>
 
                     <View style={styles.ratesContainer}>
                         {getFilteredRates().length > 0 ? (
                             getFilteredRates().map((item, index) => (
-                                <TouchableOpacity 
-                                    key={index} 
-                                    style={styles.rateItem}
-                                    onPress={() => {
-                                        handleCategoryChange(item.category);
-                                        handleTypeChange(item.type);
-                                    }}
-                                >
-                                    <View style={styles.rateHeader}>
-                                        <Text style={styles.rateIcon}>{getCategoryIcon(item.category)}</Text>
-                                        <View style={styles.rateInfo}>
-                                            <Text style={styles.rateType}>{item.type}</Text>
-                                            <Text style={styles.rateCategory}>{item.category}</Text>
+                                // @ts-ignore
+                                <View key={`${item.category}-${item.type}-${index}`}>
+                                    <TouchableOpacity
+                                        style={styles.rateItem}
+                                        onPress={() => {
+                                            handleCategoryChange(item.category);
+                                            handleTypeChange(item.type);
+                                        }}
+                                    >
+                                        <View style={styles.rateHeader}>
+                                            <Text style={styles.rateIcon}>{getCategoryIcon(item.category)}</Text>
+                                            <View style={styles.rateInfo}>
+                                                <Text style={styles.rateType}>{item.type}</Text>
+                                                <Text style={styles.rateCategory}>{item.category}</Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                    <View style={styles.ratePrice}>
-                                        <Text style={styles.priceAmount}>₹{item.price}</Text>
-                                        <Text style={styles.priceUnit}>per kg</Text>
-                                    </View>
-                                </TouchableOpacity>
+                                        <View style={styles.ratePrice}>
+                                            <Text style={styles.priceAmount}>₹{item.price}</Text>
+                                            <Text style={styles.priceUnit}>per kg</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
                             ))
                         ) : (
                             <View style={styles.noDataContainer}>
@@ -305,25 +309,26 @@ export default function RatesPage() {
                 animationType="fade"
                 onRequestClose={() => setShowCategoryDropdown(false)}
             >
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.modalOverlay}
                     onPress={() => setShowCategoryDropdown(false)}
                 >
                     <View style={styles.dropdownModal}>
                         <Text style={styles.dropdownModalTitle}>Select Category</Text>
-                        {getCategories().map((category: string, index: number) => (
-                            <TouchableOpacity
-                                key={index}
-                                style={styles.dropdownOption}
-                                onPress={() => {
-                                    handleCategoryChange(category);
-                                    setShowCategoryDropdown(false);
-                                }}
-                            >
-                                <Text style={styles.dropdownOptionText}>
-                                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                                </Text>
-                            </TouchableOpacity>
+                        {getCategories().map((category: string) => (
+                            <View {...({key: `category-${category}`} as any)}>
+                                <TouchableOpacity
+                                    style={styles.dropdownOption}
+                                    onPress={() => {
+                                        handleCategoryChange(category);
+                                        setShowCategoryDropdown(false);
+                                    }}
+                                >
+                                    <Text style={styles.dropdownOptionText}>
+                                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
                         ))}
                     </View>
                 </TouchableOpacity>
@@ -336,23 +341,24 @@ export default function RatesPage() {
                 animationType="fade"
                 onRequestClose={() => setShowTypeDropdown(false)}
             >
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.modalOverlay}
                     onPress={() => setShowTypeDropdown(false)}
                 >
                     <View style={styles.dropdownModal}>
                         <Text style={styles.dropdownModalTitle}>Select Type</Text>
                         {availableTypes.map((item, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                style={styles.dropdownOption}
-                                onPress={() => {
-                                    handleTypeChange(item.type);
-                                    setShowTypeDropdown(false);
-                                }}
-                            >
-                                <Text style={styles.dropdownOptionText}>{item.type}</Text>
-                            </TouchableOpacity>
+                            <View {...({key: `type-${item.type}-${index}`} as any)}>
+                                <TouchableOpacity
+                                    style={styles.dropdownOption}
+                                    onPress={() => {
+                                        handleTypeChange(item.type);
+                                        setShowTypeDropdown(false);
+                                    }}
+                                >
+                                    <Text style={styles.dropdownOptionText}>{item.type}</Text>
+                                </TouchableOpacity>
+                            </View>
                         ))}
                     </View>
                 </TouchableOpacity>
@@ -408,7 +414,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 20,
     },
-    
+
     // Toggle Button Styles
     toggleButton: {
         backgroundColor: '#1e9d47',
@@ -441,7 +447,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
     },
-    
+
     // Calculator Styles
     calculatorContainer: {
         backgroundColor: 'white',
@@ -640,7 +646,7 @@ const styles = StyleSheet.create({
     categoryButtonTextActive: {
         color: 'white',
     },
-    
+
     loadingContainer: {
         padding: 60,
         alignItems: 'center',
