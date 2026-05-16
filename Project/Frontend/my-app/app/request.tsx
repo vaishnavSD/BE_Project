@@ -430,10 +430,10 @@ export default function Request() {
                     result.message,
                     [
                         {
-                            text: "View Dashboard",
+                            text: "Go to Home",
                             onPress: () => {
                                 resetForm();
-                                navigation.navigate('UserDashboard' as never);
+                                navigation.navigate('Home' as never);
                             }
                         },
                         {

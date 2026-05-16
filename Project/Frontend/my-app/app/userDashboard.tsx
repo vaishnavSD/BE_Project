@@ -137,10 +137,18 @@ export default function UserDashboard() {
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity 
             style={styles.collectBtn} 
-            onPress={() => navigation.navigate('ScrapCollection' as never)}
+            onPress={() => navigation.navigate('AvailableRequests' as never)}
           >
-            <Text style={styles.collectIcon}>♻️</Text>
-            <Text style={styles.collectText}>Collect Scrap</Text>
+            <Text style={styles.collectIcon}>📋</Text>
+            <Text style={styles.collectText}>Available Requests</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.pendingBtn} 
+            onPress={() => navigation.navigate('PendingPickups' as never)}
+          >
+            <Text style={styles.pendingIcon}>⏳</Text>
+            <Text style={styles.pendingText}>Pending Pickups</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -148,7 +156,7 @@ export default function UserDashboard() {
             onPress={handleShowCollectedScrap}
           >
             <Text style={styles.myScrapIcon}>📦</Text>
-            <Text style={styles.myScrapText}>My Collected Scrap</Text>
+            <Text style={styles.myScrapText}>My Collections</Text>
           </TouchableOpacity>
         </View>
 
@@ -258,13 +266,13 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 15,
+    gap: 10,
     marginTop: 30,
   },
   collectBtn: {
     flex: 1,
     backgroundColor: '#27ae60',
-    paddingVertical: 25,
+    paddingVertical: 20,
     borderRadius: 15,
     alignItems: 'center',
     elevation: 3,
@@ -277,19 +285,44 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   collectIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    fontSize: 28,
+    marginBottom: 6,
   },
   collectText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  pendingBtn: {
+    flex: 1,
+    backgroundColor: '#f39c12',
+    paddingVertical: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  pendingIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  pendingText: {
+    color: 'white',
+    fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   myScrapBtn: {
     flex: 1,
     backgroundColor: '#3498db',
-    paddingVertical: 25,
+    paddingVertical: 20,
     borderRadius: 15,
     alignItems: 'center',
     elevation: 3,
@@ -302,12 +335,12 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   myScrapIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    fontSize: 28,
+    marginBottom: 6,
   },
   myScrapText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
   },

@@ -16,6 +16,14 @@ import ScrapDetails from './app/scrapDetails';
 import ManageAgents from './app/manageAgents';
 import Reports from './app/reports';
 import AgentSignup from './app/agentSignup';
+import FactoryDashboard from './app/factoryDashboard';
+import ManageFactory from './app/manageFactory';
+import FactoryReview from './app/factoryReview';
+import FactoryApproved from './app/factoryApproved';
+import CallAgentDashboard from './app/callAgentDashboard';
+import AddEmployee from './app/addEmployee';
+import AvailableRequests from './app/availableRequests';
+import PendingPickups from './app/pendingPickups';
 
 const Stack = createNativeStackNavigator();
 
@@ -100,6 +108,46 @@ export default function App() {
           name="AgentSignup" 
           component={AgentSignup} 
           options={{ title: 'Add Agent' }}
+        />
+        <Stack.Screen 
+          name="FactoryDashboard" 
+          component={FactoryDashboard} 
+          options={{ title: 'Factory Dashboard' }}
+        />
+        <Stack.Screen 
+          name="ManageFactory" 
+          component={ManageFactory} 
+          options={{ title: 'Manage Factory Staff' }}
+        />
+        <Stack.Screen 
+          name="FactoryReview" 
+          component={FactoryReview} 
+          options={{ title: 'Review Collections' }}
+        />
+        <Stack.Screen 
+          name="FactoryApproved" 
+          component={FactoryApproved} 
+          options={{ title: 'Collected Items' }}
+        />
+        <Stack.Screen 
+          name="CallAgentDashboard" 
+          component={CallAgentDashboard} 
+          options={{ title: 'Call Agent Dashboard' }}
+        />
+        <Stack.Screen 
+          name="AddEmployee" 
+          component={AddEmployee} 
+          options={{ title: 'Add Employee' }}
+        />
+        <Stack.Screen 
+          name="AvailableRequests" 
+          component={AvailableRequests} 
+          options={{ title: 'Available Requests' }}
+        />
+        <Stack.Screen 
+          name="PendingPickups" 
+          component={PendingPickups} 
+          options={{ title: 'Pending Pickups' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

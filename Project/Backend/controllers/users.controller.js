@@ -7,12 +7,12 @@ export async function registerUser(req, res) {
         if (!name || !email || !mobile_No || !address || !role || !password) {
             return res.status(400).json({ error: "All fields are required" });
         }
-        //bcrypt password
-        //const hashPassword = await bcrypt.hash(password, 10);
-        //const hashPassword = await bcrypt.hash(password, 10);
+        
+        // Hash password before storing
+        const hashPassword = await bcrypt.hash(password, 10);
 
-        const userId = await adduser(req.db, { name, email, mobile_No, address, role, password });
-        res.status(201).json({ message: "User registered successfully", userId });
+        const userId = await adduser(req.db, { name, email, mobile_No, address, role, password: hashPassword });
+        res.status(201).json({ success: true, message: "User registered successfully", userId });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: "User with this mobile number already exists" });
@@ -42,10 +42,10 @@ export async function loginUser(req, res) {
 export async function getAllUsers(req, res) {
     try {
         const users = await getUsers(req.db);
-        res.json(users);
+        res.json({ success: true, users });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Error fetching users" });
+        res.status(500).json({ success: false, error: "Error fetching users" });
     }
 }
 

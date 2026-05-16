@@ -38,11 +38,13 @@ interface ScrapData {
   price: number;
 }
 
-export default function ScrapCollection() {
+export default function ScrapCollection({ route }: { route?: any }) {
+  const navigation = useNavigation();
   const [user, setUser] = useState<User | null>(null);
   const [scrapData, setScrapData] = useState<ScrapData[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [requestId, setRequestId] = useState<number | null>(null);
 
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -62,8 +64,12 @@ export default function ScrapCollection() {
   const [activeScrapItemId, setActiveScrapItemId] = useState<string>('');
 
   useEffect(() => {
+    // Get requestId from route params if available
+    if (route?.params?.requestId) {
+      setRequestId(route.params.requestId);
+    }
     initializeForm();
-  }, []);
+  }, [route]);
 
   const initializeForm = async () => {
     try {
@@ -78,6 +84,11 @@ export default function ScrapCollection() {
           { text: "OK", onPress: () => navigation.navigate('Login' as never) }
         ]);
         return;
+      }
+
+      // If we have a requestId, fetch the request details to pre-fill customer info
+      if (route?.params?.requestId) {
+        await fetchRequestDetails(route.params.requestId);
       }
 
       // Fetch scrap data for dropdowns
@@ -113,6 +124,28 @@ export default function ScrapCollection() {
     } catch (error) {
       console.error("Error fetching scrap data:", error);
       Alert.alert("Error", "Failed to fetch scrap data. Some features may not work properly.");
+    }
+  };
+
+  const fetchRequestDetails = async (requestId: number) => {
+    try {
+      const apiClient = createRobustApiClient();
+      const response = await apiClient.get(`/userRequests/get`);
+      
+      if (response.data && Array.isArray(response.data)) {
+        const request = response.data.find((req: any) => req.id === requestId);
+        if (request) {
+          // Pre-fill customer information from the request
+          setCustomerName(request.name || '');
+          setCustomerEmail(request.email || '');
+          setCustomerMobile(request.mobile_No || '');
+          setAddress(request.address || '');
+          console.log("Request details loaded for customer:", request.name);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching request details:", error);
+      // Don't show error to user, just continue with empty form
     }
   };
 
@@ -278,11 +311,24 @@ export default function ScrapCollection() {
       const response = await robustClient.post('/collection/add', collectionData);
       
       console.log("Collection submitted successfully:", response.data);
+
+      // If this collection is from a pending pickup request, mark it as collected
+      if (requestId && user.id) {
+        try {
+          await robustClient.put(`/userRequests/${requestId}/collect`, { agentId: user.id });
+          console.log("Request marked as collected:", requestId);
+        } catch (error) {
+          console.error("Error marking request as collected:", error);
+          // Don't fail the whole submission if this fails
+        }
+      }
       
       Alert.alert(
         "Success", 
-        "Scrap collection recorded successfully!",
-        [{ text: "OK", onPress: () => navigation.navigate('UserDashboard' as never) }]
+        requestId 
+          ? "Scrap collection completed! The pickup request has been marked as collected."
+          : "Scrap collection recorded successfully!",
+        [{ text: "OK", onPress: () => navigation.navigate('Home' as never) }]
       );
       
     } catch (error: any) {
@@ -317,7 +363,9 @@ export default function ScrapCollection() {
         <TouchableOpacity onPress={() => navigation.navigate('UserDashboard' as never)}>
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Scrap Collection Form</Text>
+        <Text style={styles.title}>
+          {requestId ? 'Collect Scrap - Request #' + requestId : 'Scrap Collection Form'}
+        </Text>
       </View>
 
       <View style={styles.formContainer}>

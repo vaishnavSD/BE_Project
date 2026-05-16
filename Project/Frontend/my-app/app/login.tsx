@@ -61,6 +61,10 @@ export default function Login() {
         // Navigate based on role
         if (role === "admin") {
           navigation.navigate('AdminDashboard' as never);
+        } else if (role === "factory") {
+          navigation.navigate('FactoryDashboard' as never);
+        } else if (role === "call_agent") {
+          navigation.navigate('CallAgentDashboard' as never);
         } else {
           navigation.navigate('UserDashboard' as never);
         }
@@ -132,6 +136,20 @@ export default function Login() {
             onPress={() => setRole("agent")}
           >
             <Text style={[styles.roleText, role === "agent" && styles.roleTextActive]}>Agent</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.roleButton, role === "call_agent" && styles.roleButtonActive]}
+            onPress={() => setRole("call_agent")}
+          >
+            <Text style={[styles.roleText, role === "call_agent" && styles.roleTextActive]}>Call Agent</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.roleContainer, { marginTop: 10 }]}>
+          <TouchableOpacity 
+            style={[styles.roleButton, role === "factory" && styles.roleButtonActive]}
+            onPress={() => setRole("factory")}
+          >
+            <Text style={[styles.roleText, role === "factory" && styles.roleTextActive]}>Factory</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.roleButton, role === "admin" && styles.roleButtonActive]}

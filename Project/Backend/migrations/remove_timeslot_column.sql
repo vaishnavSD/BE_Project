@@ -1,0 +1,3 @@
+-- Remove time_slot column from userRequest table since we'll use hardcoded time slots
+-- First, let's see what data exists
+-- ALTER TABLE userRequest DROP COLUMN time_slot;

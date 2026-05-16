@@ -9,9 +9,11 @@ import userRequestRouter from "./routes/scrapRequest.route.js";
 import userRouter from "./routes/users.route.js";
 import collectionRouter from "./routes/scrapCollection.route.js";
 import reportsRouter from "./routes/reports.route.js";
+import factoryRouter from "./routes/factory.route.js";
+import { autoMigrate } from "./utils/migration.js";
 
 // Load env variables
-dotenv.config({ path: "./.env" });
+dotenv.config({ path: './env.env' });
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,6 +26,12 @@ console.log("MYSQL_USER:", process.env.MYSQL_USER);
 console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
 
 // ===== Middleware =====
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.path} from ${req.ip}`);
+  next();
+});
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -46,6 +54,9 @@ try {
     port: process.env.MYSQL_PORT,
   });
   console.log("✅ MySQL connected");
+  
+  // Run auto-migration for factory features
+  await autoMigrate(db);
 } catch (error) {
   console.error("❌ MySQL connection error:", error.message);
   process.exit(1);
@@ -73,11 +84,11 @@ app.use("/api/userRequests", userRequestRouter);
 app.use("/api/user", userRouter);
 app.use("/api/collection", collectionRouter);
 app.use("/api/reports", reportsRouter);
+app.use("/api/factory", factoryRouter);
 
 // ===== Start Server =====
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${port}`);
-  console.log(`📱 Mobile access: http://10.249.247.190:${port}/api`);
   console.log(`💻 Local access: http://localhost:${port}/api`);
   console.log(`🌐 Network access: http://0.0.0.0:${port}/api`);
 });

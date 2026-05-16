@@ -37,19 +37,20 @@ export default function ManageAgents() {
   const fetchAgents = async () => {
     try {
       setError(null);
-      console.log('Fetching agents from API...');
+      console.log('Fetching employees from API...');
       const response = await apiClient.get(API_ENDPOINTS.USERS);
       console.log('Users API response:', response.data);
       
-      // Filter to get only agents (non-admin users)
-      const agentsData = Array.isArray(response.data) 
-        ? response.data.filter(user => user.role !== 'admin') 
+      // Get all non-admin users (agents, factory, call_agent)
+      const usersArray = response.data.users || response.data || [];
+      const agentsData = Array.isArray(usersArray) 
+        ? usersArray.filter((user: any) => user.role !== 'admin') 
         : [];
       
       setAgents(agentsData);
-      console.log('Agents loaded successfully:', agentsData.length);
+      console.log('Employees loaded successfully:', agentsData.length);
     } catch (err: any) {
-      console.error("Error fetching agents:", err);
+      console.error("Error fetching employees:", err);
       
       let errorMessage = 'Failed to fetch agents.';
       
@@ -169,9 +170,9 @@ export default function ManageAgents() {
     }
     
     const matchesSearch = searchQuery === '' || 
-                         agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         agent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         agent.mobile_No.includes(searchQuery);
+                         agent.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         agent.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         String(agent.mobile_No || '').includes(searchQuery);
     
     const matchesRole = filterRole === "all" || agent.role === filterRole;
     
@@ -204,7 +205,7 @@ export default function ManageAgents() {
         >
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Manage Agents</Text>
+        <Text style={styles.title}>Manage Employees</Text>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
           <Text style={styles.refreshText}>🔄</Text>
         </TouchableOpacity>
@@ -215,10 +216,10 @@ export default function ManageAgents() {
         <View style={styles.actionSection}>
           <TouchableOpacity 
             style={styles.addAgentBtn} 
-            onPress={() => navigation.navigate('AgentSignup' as never)}
+            onPress={() => navigation.navigate('AddEmployee' as never)}
           >
-            <Text style={styles.addAgentIcon}>👤</Text>
-            <Text style={styles.addAgentText}>Add New Agent</Text>
+            <Text style={styles.addAgentIcon}>➕</Text>
+            <Text style={styles.addAgentText}>Add New Employee</Text>
           </TouchableOpacity>
         </View>
 
@@ -274,12 +275,12 @@ export default function ManageAgents() {
         ) : filteredAgents.length === 0 ? (
           <View style={styles.centerContainer}>
             <Text style={styles.emptyText}>
-              {searchQuery || filterRole !== "all" ? "No agents match your search" : "No agents found"}
+              {searchQuery || filterRole !== "all" ? "No employees match your search" : "No employees found"}
             </Text>
             <Text style={styles.emptySubtext}>
               {searchQuery || filterRole !== "all" 
                 ? "Try adjusting your search or filter criteria" 
-                : "Add your first agent to get started"}
+                : "Add your first employee to get started"}
             </Text>
           </View>
         ) : (
@@ -288,7 +289,7 @@ export default function ManageAgents() {
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>{filteredAgents.length}</Text>
                 <Text style={styles.statLabel}>
-                  {searchQuery || filterRole !== "all" ? "Filtered" : "Total"} Agents
+                  {searchQuery || filterRole !== "all" ? "Filtered" : "Total"} Employees
                 </Text>
               </View>
               <View style={styles.statItem}>

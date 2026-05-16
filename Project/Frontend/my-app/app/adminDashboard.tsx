@@ -82,17 +82,23 @@ export default function AdminDashboard() {
 
           {/* Secondary Actions Grid */}
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('ScrapDetails' as never)}>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('AddEmployee' as never)}>
               <View style={styles.smallIconContainer}>
-                <Text style={styles.smallActionIcon}>📋</Text>
+                <Text style={styles.smallActionIcon}>➕</Text>
               </View>
-              <Text style={styles.secondaryActionText}>Scrap Details</Text>
+              <Text style={styles.secondaryActionText}>Add Employee</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('ManageAgents' as never)}>
               <View style={styles.smallIconContainer}>
                 <Text style={styles.smallActionIcon}>👥</Text>
               </View>
-              <Text style={styles.secondaryActionText}>Manage Agents</Text>
+              <Text style={styles.secondaryActionText}>Manage Staff</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('ScrapDetails' as never)}>
+              <View style={styles.smallIconContainer}>
+                <Text style={styles.smallActionIcon}>📋</Text>
+              </View>
+              <Text style={styles.secondaryActionText}>Scrap Details</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('Reports' as never)}>
               <View style={styles.smallIconContainer}>
@@ -100,12 +106,7 @@ export default function AdminDashboard() {
               </View>
               <Text style={styles.secondaryActionText}>Reports</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.secondaryAction]} onPress={() => navigation.navigate('Home' as never)}>
-              <View style={styles.smallIconContainer}>
-                <Text style={styles.smallActionIcon}>⚙️</Text>
-              </View>
-              <Text style={styles.secondaryActionText}>Settings</Text>
-            </TouchableOpacity>
+
           </View>
         </View>
       </View>

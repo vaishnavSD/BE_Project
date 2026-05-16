@@ -1,4 +1,28 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Import AsyncStorage with fallback for web
+let AsyncStorage: any;
+try {
+  AsyncStorage = require('@react-native-async-storage/async-storage').default;
+} catch (error) {
+  // Fallback for web or if module is not available
+  AsyncStorage = {
+    getItem: async (key: string) => {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem(key);
+      }
+      return null;
+    },
+    setItem: async (key: string, value: string) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(key, value);
+      }
+    },
+    removeItem: async (key: string) => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(key);
+      }
+    },
+  };
+}
 
 export interface User {
   id: number;
@@ -6,7 +30,7 @@ export interface User {
   email: string;
   mobile_No: string;
   address: string;
-  role: 'admin' | 'agent';
+  role: 'admin' | 'agent' | 'factory';
 }
 
 // In-memory cache for user data to provide synchronous access
@@ -72,7 +96,7 @@ export const isAuthenticated = (): boolean => {
 };
 
 // Check if user has specific role
-export const hasRole = (role: 'admin' | 'agent'): boolean => {
+export const hasRole = (role: 'admin' | 'agent' | 'factory'): boolean => {
   const user = getCurrentUser();
   return user?.role === role;
 };
@@ -85,6 +109,11 @@ export const isAdmin = (): boolean => {
 // Check if user is agent
 export const isAgent = (): boolean => {
   return hasRole('agent');
+};
+
+// Check if user is factory employee
+export const isFactory = (): boolean => {
+  return hasRole('factory');
 };
 
 // Initialize cache when module loads

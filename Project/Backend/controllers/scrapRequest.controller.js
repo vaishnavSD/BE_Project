@@ -1,4 +1,16 @@
-import { addUserRequest, getAllUserRequests, updateUserRequestStatus, deleteUserRequest, getUserRequestById } from "../models/scrapRequest.model.js";  
+import { 
+  addUserRequest, 
+  getAllUserRequests, 
+  updateUserRequestStatus, 
+  deleteUserRequest, 
+  getUserRequestById,
+  updateRequestWithCallAgent,
+  acceptRequestByAgent,
+  getCallAgentApprovedRequests,
+  getRequestsByCallAgent,
+  getAcceptedRequestsByAgent,
+  markRequestAsCollected
+} from "../models/scrapRequest.model.js";  
 // import scrapDetails from '../models/scrapDetails.model.js';
 
 export async function addRequest(req, res) {
@@ -151,5 +163,146 @@ export async function deleteRequest(req, res) {
   } catch (error) {
     console.log("❌ Error in deleteRequest:", error);
     res.status(500).json({ error: "Error deleting request" });
+  }
+}
+
+// Call agent approves request after calling user
+export async function callAgentApproveRequest(req, res) {
+  console.log("📥 Call agent approving request");
+  const { id } = req.params;
+  const { callAgentId, notes } = req.body;
+  
+  try {
+    if (!callAgentId) {
+      return res.status(400).json({ error: "Call agent ID is required" });
+    }
+
+    const existingRequest = await getUserRequestById(req.db, id);
+    if (!existingRequest) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    const affectedRows = await updateRequestWithCallAgent(
+      req.db, 
+      id, 
+      'Call Agent Approved', 
+      callAgentId, 
+      notes || ''
+    );
+    
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    
+    console.log("✅ Request approved by call agent");
+    res.json({ message: "Request approved successfully" });
+  } catch (error) {
+    console.log("❌ Error in callAgentApproveRequest:", error);
+    res.status(500).json({ error: "Error approving request" });
+  }
+}
+
+// Agent accepts request from call agent approved list
+export async function agentAcceptRequest(req, res) {
+  console.log("📥 Agent accepting request");
+  const { id } = req.params;
+  const { agentId } = req.body;
+  
+  try {
+    if (!agentId) {
+      return res.status(400).json({ error: "Agent ID is required" });
+    }
+
+    const existingRequest = await getUserRequestById(req.db, id);
+    if (!existingRequest) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (existingRequest.status !== 'Call Agent Approved') {
+      return res.status(400).json({ error: "Request must be approved by call agent first" });
+    }
+
+    const affectedRows = await acceptRequestByAgent(req.db, id, agentId);
+    
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    
+    console.log("✅ Request accepted by agent");
+    res.json({ message: "Request accepted successfully" });
+  } catch (error) {
+    console.log("❌ Error in agentAcceptRequest:", error);
+    res.status(500).json({ error: "Error accepting request" });
+  }
+}
+
+// Get requests approved by call agents (for agent dashboard)
+export async function getApprovedRequests(req, res) {
+  try {
+    const requests = await getCallAgentApprovedRequests(req.db);
+    res.json(requests);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error fetching approved requests" });
+  }
+}
+
+// Get requests by specific call agent
+export async function getCallAgentRequests(req, res) {
+  const { callAgentId } = req.params;
+  
+  try {
+    const requests = await getRequestsByCallAgent(req.db, callAgentId);
+    res.json(requests);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error fetching call agent requests" });
+  }
+}
+
+// Get pending pickups for a specific agent
+export async function getAgentPendingPickups(req, res) {
+  const { agentId } = req.params;
+  
+  try {
+    const requests = await getAcceptedRequestsByAgent(req.db, agentId);
+    res.json(requests);
+  } catch (error) {
+    console.log("❌ Error fetching pending pickups:", error);
+    res.status(500).json({ error: "Error fetching pending pickups" });
+  }
+}
+
+// Mark request as collected
+export async function markAsCollected(req, res) {
+  console.log("📦 Marking request as collected");
+  const { id } = req.params;
+  const { agentId } = req.body;
+  
+  try {
+    if (!agentId) {
+      return res.status(400).json({ error: "Agent ID is required" });
+    }
+
+    const existingRequest = await getUserRequestById(req.db, id);
+    if (!existingRequest) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (existingRequest.status !== 'Accepted by Agent' || existingRequest.accepted_agent_id !== agentId) {
+      return res.status(400).json({ error: "Request must be accepted by this agent first" });
+    }
+
+    const affectedRows = await markRequestAsCollected(req.db, id, agentId);
+    
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Request not found or not authorized" });
+    }
+    
+    console.log("✅ Request marked as collected");
+    res.json({ message: "Request marked as collected successfully" });
+  } catch (error) {
+    console.log("❌ Error in markAsCollected:", error);
+    res.status(500).json({ error: "Error marking request as collected" });
   }
 }

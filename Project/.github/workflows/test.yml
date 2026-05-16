@@ -1,0 +1,115 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: scrapwale_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: Project/Backend/package-lock.json
+    
+    - name: Install Backend Dependencies
+      run: |
+        cd Project/Backend
+        npm ci
+    
+    - name: Wait for MySQL
+      run: |
+        while ! mysqladmin ping -h"127.0.0.1" -P3306 -uroot -ptest_password --silent; do
+          sleep 1
+        done
+    
+    - name: Run Backend Tests
+      run: |
+        cd Project/Backend
+        npm test
+      env:
+        TEST_MYSQL_HOST: 127.0.0.1
+        TEST_MYSQL_USER: root
+        TEST_MYSQL_PASSWORD: test_password
+        TEST_MYSQL_DATABASE: scrapwale_test
+        TEST_MYSQL_PORT: 3306
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: Project/Frontend/my-app/package-lock.json
+    
+    - name: Install Frontend Dependencies
+      run: |
+        cd Project/Frontend/my-app
+        npm ci
+    
+    - name: Run Frontend Tests
+      run: |
+        cd Project/Frontend/my-app
+        npm test
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: scrapwale_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install All Dependencies
+      run: |
+        cd Project
+        npm run install:all
+    
+    - name: Run Integration Tests
+      run: |
+        cd Project
+        npm run test:coverage
+      env:
+        TEST_MYSQL_HOST: 127.0.0.1
+        TEST_MYSQL_USER: root
+        TEST_MYSQL_PASSWORD: test_password
+        TEST_MYSQL_DATABASE: scrapwale_test
+        TEST_MYSQL_PORT: 3306

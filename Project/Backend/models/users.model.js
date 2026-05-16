@@ -19,6 +19,12 @@ export async function getUsers(db) {
     return rows;
 }
 
+// Get factory employees
+export async function getFactoryEmployees(db) {
+    const [rows] = await db.query("SELECT * FROM users WHERE role = 'factory' ORDER BY id DESC");
+    return rows;
+}
+
 // Get user by ID
 export async function getUserById(db, id) {
     const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
