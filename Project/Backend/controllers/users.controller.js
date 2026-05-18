@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
-import { adduser, login, getUsers, deleteUser, getUserById } from '../models/users.model.js';
+import { adduser, getUserByMobile, getUsers, deleteUser, getUserById } from '../models/users.model.js';
+import { validateEmail, validateMobile, validatePassword } from '../middleware/validation.middleware.js';
 
 export async function registerUser(req, res) {
     const { name, email, mobile_No, address, role, password } = req.body;
@@ -8,8 +9,30 @@ export async function registerUser(req, res) {
             return res.status(400).json({ error: "All fields are required" });
         }
         
+        // Validate email format
+        if (!validateEmail(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        
+        // Validate mobile number
+        if (!validateMobile(mobile_No)) {
+            return res.status(400).json({ error: "Mobile number must be 10-15 digits" });
+        }
+        
+        // Validate password strength
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.valid) {
+            return res.status(400).json({ error: passwordValidation.message });
+        }
+        
+        // Validate role
+        const validRoles = ['admin', 'agent', 'factory', 'call_agent'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({ error: "Invalid role. Must be one of: " + validRoles.join(', ') });
+        }
+        
         // Hash password before storing
-        const hashPassword = await bcrypt.hash(password, 10);
+        const hashPassword = await bcrypt.hash(password, 12);
 
         const userId = await adduser(req.db, { name, email, mobile_No, address, role, password: hashPassword });
         res.status(201).json({ success: true, message: "User registered successfully", userId });
@@ -17,6 +40,7 @@ export async function registerUser(req, res) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ error: "User with this mobile number already exists" });
         }
+        console.error("Error in registerUser:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
@@ -25,16 +49,30 @@ export async function loginUser(req, res) {
     const { mobile_No, password } = req.body;
     try {
         if (!mobile_No || !password) {
-            return res.status(400).json({ error: "All fields are required" });
+            return res.status(400).json({ error: "Mobile number and password are required" });
         }
 
-        const user = await login(req.db, { mobile_No, password });
+        // Get user by mobile number
+        const user = await getUserByMobile(req.db, mobile_No);
         if (!user) {
             return res.status(401).json({ error: "Invalid mobile number or password" });
         }
 
-        res.status(200).json({ message: "Login successful", user });
+        // Compare password using bcrypt
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: "Invalid mobile number or password" });
+        }
+
+        // Remove password from response
+        const { password: _, ...userWithoutPassword } = user;
+
+        res.status(200).json({ 
+            message: "Login successful", 
+            user: userWithoutPassword 
+        });
     } catch (error) {
+        console.error("Error in loginUser:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }

@@ -6,10 +6,10 @@ export async function adduser(db, {name,email,mobile_No,address,role,password}) 
     return result.insertId;
 }
 
-export async function login(db, {mobile_No,password}) {
+export async function getUserByMobile(db, mobile_No) {
     const [rows] = await db.query(
-        "SELECT * FROM users WHERE mobile_No = ? AND password = ?",
-        [mobile_No,password]
+        "SELECT id, name, email, mobile_No, address, role, password FROM users WHERE mobile_No = ?",
+        [mobile_No]
     );
     return rows[0];
 }

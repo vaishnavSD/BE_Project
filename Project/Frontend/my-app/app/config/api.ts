@@ -147,9 +147,11 @@ export const API_ENDPOINTS = {
 };
 
 // Response interceptor
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
-);
+if (apiClient.interceptors) {
+  apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => Promise.reject(error)
+  );
+}
 
 export default apiClient;

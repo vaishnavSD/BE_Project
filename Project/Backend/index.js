@@ -11,19 +11,13 @@ import collectionRouter from "./routes/scrapCollection.route.js";
 import reportsRouter from "./routes/reports.route.js";
 import factoryRouter from "./routes/factory.route.js";
 import { autoMigrate } from "./utils/migration.js";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler.middleware.js";
 
 // Load env variables
-dotenv.config({ path: './env.env' });
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-
-// Debug: Check if env variables are loaded
-console.log("🔍 Environment variables check:");
-console.log("PORT:", process.env.PORT);
-console.log("MYSQL_HOST:", process.env.MYSQL_HOST);
-console.log("MYSQL_USER:", process.env.MYSQL_USER);
-console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
 
 // ===== Middleware =====
 // Request logging middleware
@@ -34,12 +28,18 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(cookieParser());
+
+// CORS configuration - restrict in production
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:3000', 'http://localhost:8081'];
+
 app.use(
   cors({
-    origin: true, // Allow all origins in development
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-User-Id", "X-User-Role"],
   })
 );
 
@@ -75,7 +75,7 @@ app.get("/api/health", (req, res) => {
     status: "OK",
     message: "Server is running",
     timestamp: new Date().toISOString(),
-    ip: req.ip
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -86,9 +86,27 @@ app.use("/api/collection", collectionRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/factory", factoryRouter);
 
+// ===== Error Handling =====
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
+
 // ===== Start Server =====
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${port}`);
   console.log(`💻 Local access: http://localhost:${port}/api`);
   console.log(`🌐 Network access: http://0.0.0.0:${port}/api`);
+  console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  if (db) {
+    await db.end();
+    console.log('Database connection closed');
+  }
+  process.exit(0);
 });

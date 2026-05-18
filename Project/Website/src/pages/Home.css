@@ -1,0 +1,400 @@
+.home-container {
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+/* Header */
+.header {
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 5%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.logo {
+  color: #1e9d47;
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background-color: #1e9d47;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #178a3c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 157, 71, 0.3);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  padding: 5rem 5% 4rem;
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5e8 100%);
+  margin-top: 0;
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: bold;
+  color: #1e9d47;
+  margin-bottom: 1.25rem;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #555;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Rate Slider Section */
+.rate-slider-section {
+  padding: 3rem 5%;
+  background-color: #f0f9f4;
+  border-top: 1px solid #e0f2e0;
+  border-bottom: 1px solid #e0f2e0;
+}
+
+.rate-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  background-color: #ff4444;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  gap: 0.5rem;
+}
+
+.live-indicator.offline {
+  background-color: #ff9500;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.live-text {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1e9d47;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.rate-slider {
+  margin: 2rem 0;
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.rate-slider::-webkit-scrollbar {
+  height: 8px;
+}
+
+.rate-slider::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.rate-slider::-webkit-scrollbar-thumb {
+  background: #1e9d47;
+  border-radius: 10px;
+}
+
+.rate-slider-track {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0 1rem;
+}
+
+.rate-item {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  border-left: 4px solid #1e9d47;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rate-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(30, 157, 71, 0.2);
+}
+
+.rate-item-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.rate-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.rate-details {
+  margin-bottom: 1rem;
+}
+
+.rate-type {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.rate-category {
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: capitalize;
+  background-color: #f0f9f4;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10px;
+}
+
+.rate-price-container {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.rate-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e9d47;
+}
+
+.rate-price-unit {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.view-all-btn {
+  display: block;
+  margin: 2rem auto 0;
+  padding: 1rem 2rem;
+}
+
+/* Services */
+.services {
+  padding: 4rem 5%;
+  background-color: #f7fff9;
+  text-align: center;
+}
+
+.service-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto 0;
+}
+
+.card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(30, 157, 71, 0.15);
+}
+
+.icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.card-text {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+  background-color: #1e9d47;
+  padding: 2.5rem 5%;
+  text-align: center;
+  color: white;
+}
+
+.footer-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.footer-text {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.95;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 4%;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .rate-slider-track {
+    padding: 0 0.5rem;
+  }
+
+  .service-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 3rem 4% 2.5rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .rate-item {
+    min-width: 170px;
+  }
+}
