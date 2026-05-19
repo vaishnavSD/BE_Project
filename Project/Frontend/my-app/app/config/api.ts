@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Backend API base URLs - Environment-based configuration
 export const API_BASE_URLS = [
-  process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api', // Primary API URL
-  'http://10.136.44.142:5000/api',       // Android Emulator
+  process.env.EXPO_PUBLIC_API_URL || 'http://10.122.186.142:5000/api', // Primary API URL
+  'http://10.122.186.142:5000/api',       // LAN fallback (current machine IP)
   ];
 
 export const API_BASE_URL = API_BASE_URLS[0];

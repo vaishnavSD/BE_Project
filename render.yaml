@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: scrapwale-backend
+    runtime: node
+    rootDir: Project/Backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
